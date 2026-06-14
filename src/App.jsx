@@ -4,13 +4,15 @@ import SettingsModal from './SettingsModal';
 import { callLLMStream } from './api';
 import { marked } from 'marked';
 
-const renderer = new marked.Renderer();
-const originalLink = renderer.link.bind(renderer);
-renderer.link = (token) => {
-  const html = originalLink(token);
-  return html.replace(/^<a /, '<a target="_blank" rel="noopener noreferrer" ');
-};
-marked.use({ renderer });
+marked.use({
+  renderer: {
+    link({ href, title, tokens }) {
+      const text = this.parser.parseInline(tokens);
+      const titleAttr = title ? ` title="${title}"` : '';
+      return `<a target="_blank" rel="noopener noreferrer" href="${href}"${titleAttr}>${text}</a>`;
+    }
+  }
+});
 
 function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
